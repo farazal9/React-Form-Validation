@@ -1,48 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const FormComponent = () => {
+
   const [userDetails, setUserDetails] = useState({
     firstName: "",
     secondName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
-  const [formErrors, setFormErrors] = useState({});
+  const [userError, setUserError] = useState({
+    firstNameError: false,
+    secondNameError: false,
+    emailError: false,
+    passwordError: false,
+    confirmPasswordError: false,
+  });
 
   const inputChangeHandler = (e) => {
-    const { value, name } = e.target;
-
+    const { name, value } = e.target;
     setUserDetails({
       ...userDetails,
-      [name]: value
+      [name]: value,
     });
   };
 
-  const validateForm = () => {
-    const errors = {};
+  const validateForm = (e) => {
+    e.preventDefault();
+
     const { firstName, secondName, email, password, confirmPassword } = userDetails;
 
-    if (!firstName) errors.firstName = "First Name is required";
-    if (!secondName) errors.secondName = "Second Name is required";
-    if (!email) errors.email = "Email is required";
-    if (!password) errors.password = "Password is required";
-    if (password !== confirmPassword) errors.confirmPassword = "Passwords do not match";
+    const errors = {
+      firstNameError: firstName === "",
+      secondNameError: secondName === "",
+      emailError: email === "",
+      passwordError: password === "",
+      confirmPasswordError: confirmPassword === "" || password !== confirmPassword, // checks if passwords match
+    };
 
-    return errors;
-  };
+    setUserError(errors);
 
-  const formHandler = (e) => {
-    e.preventDefault();
-    
-    const errors = validateForm();
-    setFormErrors(errors);
-
-    if (Object.keys(errors).length === 0) {
-      console.log("Form Submitted:", userDetails);
-
-      // Reset form fields
+    if (!Object.values(errors).includes(true)) {
+      console.log("Form submitted:", userDetails);
       setUserDetails({
         firstName: "",
         secondName: "",
@@ -53,78 +53,100 @@ const FormComponent = () => {
     }
   };
 
+  useEffect(() => {
+    const { firstName, secondName, email, password, confirmPassword } = userDetails;
+
+    setUserError((prev) => ({
+      ...prev,
+      firstNameError: firstName === "",
+      secondNameError: secondName === "",
+      emailError: email === "",
+      passwordError: password === "",
+      confirmPasswordError: confirmPassword === "" || password !== confirmPassword, // real-time matching check
+    }));
+  }, [userDetails]);
+
   return (
-    <div>
-      <main className='w-25 m-auto'>
+    <>
+      <div className='w-25 m-auto'>
         <h1>FormComponent</h1>
 
-        <form onSubmit={formHandler}>
-
-          <div className="">
-            <h6>First Name</h6>
+        <form onSubmit={validateForm}>
+          <div className="mb-3">
+            <label htmlFor="firstName" className="form-label">First Name</label>
             <input
+              type="text"
+              className="form-control"
+              id="firstName"
+              name="firstName"
               value={userDetails.firstName}
               onChange={inputChangeHandler}
-              name='firstName'
-              type="text"
-              className="form-control"
+              style={{ borderColor: userError.firstNameError ? 'red' : '' }}
             />
-            {formErrors.firstName && <p style={{color: 'red'}}>{formErrors.firstName}</p>}
+            {userError.firstNameError && <span className="text-danger">First Name is required</span>}
           </div>
 
-          <div className="">
-            <h6>Second Name</h6>
+          <div className="mb-3">
+            <label htmlFor="secondName" className="form-label">Second Name</label>
             <input
+              type="text"
+              className="form-control"
+              id="secondName"
+              name="secondName"
               value={userDetails.secondName}
               onChange={inputChangeHandler}
-              name='secondName'
-              type="text"
-              className="form-control"
+              style={{ borderColor: userError.secondNameError ? 'red' : '' }}
             />
-            {formErrors.secondName && <p style={{color: 'red'}}>{formErrors.secondName}</p>}
+            {userError.secondNameError && <span className="text-danger">Second Name is required</span>}
           </div>
 
-          <div className="">
-            <h6>Email</h6>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email address</label>
             <input
-              value={userDetails.email}
-              onChange={inputChangeHandler}
-              name='email'
               type="email"
               className="form-control"
+              id="email"
+              name="email"
+              value={userDetails.email}
+              onChange={inputChangeHandler}
+              style={{ borderColor: userError.emailError ? 'red' : '' }}
             />
-            {formErrors.email && <p style={{color: 'red'}}>{formErrors.email}</p>}
+            {userError.emailError && <span className="text-danger">Email is required</span>}
           </div>
 
-          <div className="">
-            <h6>Password</h6>
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">Password</label>
             <input
+              type="password"
+              className="form-control"
+              id="password"
+              name="password"
               value={userDetails.password}
               onChange={inputChangeHandler}
-              name='password'
-              type="password"
-              className="form-control"
+              style={{ borderColor: userError.passwordError ? 'red' : '' }}
             />
-            {formErrors.password && <p style={{color: 'red'}}>{formErrors.password}</p>}
+            {userError.passwordError && <span className="text-danger">Password is required</span>}
           </div>
 
-          <div className="">
-            <h6>Confirm Password</h6>
+          <div className="mb-3">
+            <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
             <input
+              type="password"
+              className="form-control"
+              id="confirmPassword"
+              name="confirmPassword"
               value={userDetails.confirmPassword}
               onChange={inputChangeHandler}
-              name='confirmPassword'
-              type="password"
-              className="form-control"
+              style={{ borderColor: userError.confirmPasswordError ? 'red' : '' }}
             />
-            {formErrors.confirmPassword && <p style={{color: 'red'}}>{formErrors.confirmPassword}</p>}
+            {userError.confirmPasswordError && <span className="text-danger">Passwords do not match</span>}
           </div>
 
-          <button type="submit" className="w-100 btn btn-primary mt-4">Submit</button>
+          <button type="submit" className="btn btn-primary">Submit</button>
         </form>
-      </main>
-    </div>
+      </div>
+    </>
   );
-};
+}
 
 export default FormComponent;
